@@ -1,0 +1,53 @@
+@page
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model library.Pages.SignupModel
+@{
+    ViewBag.Title = "Registration page";
+    Layout = "/Pages/Shared/_Layout.cshtml";
+}
+<div class="row">
+    <form action="/signup" method="post" class="col-6 offset-3">
+        @Html.AntiForgeryToken()
+        <div class="row g-3 align-items-center mt-3">
+            <div class="col-2 text-end">
+                <label class="col-form-label" for="login">Login</label>
+            </div>
+            <div class="col-10">
+                <input asp-for="Login" class="form-control">
+            </div>
+            <div class="col-12">
+                <span asp-validation-for="Login" class="form-text text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row g-3 align-items-center mt-3">
+            <div class="col-2 text-end">
+                <label for="email" class="col-form-label">Email:</label>
+            </div>
+            <div class="col-10">
+                <input asp-for="Email" class="form-control" />
+            </div>
+            <div class="col-12">
+                <span asp-validation-for="Email" class="form-text text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row g-3 align-items-center mt-3">
+            <div class="col-2 text-end">
+                <label for="password" class="col-form-label">Password:</label>
+            </div>
+            <div class="col-10">
+                <input asp-for="Password" class="form-control">
+            </div>
+            <div class="col-12">
+                <span asp-validation-for="Password" class="form-text text-danger"></span>
+            </div>
+        </div>
+
+        <div class="d-grid mt-3">
+            <button type="submit" class="btn btn-success">Send</button>
+        </div>
+    </form>
+    <p>Имя пользователя: @Model.Login</p>
+</div>
+

@@ -1,14 +1,14 @@
 services:
   backend:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
       target: develop
     container_name: hello-dotnet
     develop:
       watch:
         - action: rebuild
-          path: .
+          path: ./backend
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5000
@@ -22,5 +22,6 @@ services:
       - 8080:80
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./static:/usr/share/nginx/html/static:ro
 
        
