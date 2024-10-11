@@ -5,6 +5,9 @@ services:
       dockerfile: Dockerfile
       target: develop
     container_name: hello-dotnet
+    depends_on:
+      db:
+        condition: service_healthy
     develop:
       watch:
         - action: rebuild
@@ -16,7 +19,7 @@ services:
   webserver:
     image: nginx:mainline-alpine3.20-slim
     container_name: hello-nginx
-    depends_on: 
+    depends_on:
       - backend
     ports:
       - 8080:80
@@ -24,4 +27,22 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ./static:/usr/share/nginx/html/static:ro
 
-       
+  db:
+    image: postgres:alpine3.20
+    container_name: hello-postgres
+    shm_size: 128mb
+    environment:
+      POSTGRES_PASSWORD: 12345678
+      POSTGRES_USER: postgres
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+      start_interval: 10s
+
+  adminer:
+    image: adminer
+    ports:
+      - 8081:8080
