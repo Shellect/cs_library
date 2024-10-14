@@ -1,7 +1,7 @@
 services:
   backend:
     build:
-      context: ./backend
+      context: ./app
       dockerfile: Dockerfile
       target: develop
     container_name: hello-dotnet
@@ -11,7 +11,7 @@ services:
     develop:
       watch:
         - action: rebuild
-          path: ./backend
+          path: ./app
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5000
@@ -33,7 +33,7 @@ services:
     shm_size: 128mb
     environment:
       POSTGRES_PASSWORD: 12345678
-      POSTGRES_USER: postgres
+      PGUSER: postgres
     healthcheck:
       test: ["CMD", "pg_isready"]
       interval: 10s
