@@ -7,8 +7,8 @@ string? connection = builder.Configuration.GetConnectionString("DefaultConnectio
 // Добавляем в приложение сервис подключения к базе данных
 builder.Services.AddDbContextPool<app.Models.ApplicationContext>(opt => opt.UseNpgsql(connection));
 
-// добавляем в приложение сервисы Razor Pages
-builder.Services.AddRazorPages();
+// добавляем сервисы MVC
+builder.Services.AddControllersWithViews(); 
 var app = builder.Build();
 
 app.UseForwardedHeaders(new ForwardedHeadersOptions
@@ -16,7 +16,11 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
 
-// добавляем поддержку маршрутизации для Razor Pages
-app.MapRazorPages();
+// устанавливаем сопоставление маршрутов с контроллерами
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}"
+);
+ 
 
 app.Run();

@@ -23,3 +23,9 @@ WORKDIR /app
 COPY . .
 ENTRYPOINT ["dotnet", "run", "--no-launch-profile"]
 
+FROM build AS migrations
+WORKDIR /src
+RUN dotnet tool install --global dotnet-ef
+ENV PATH="$PATH:/root/.dotnet/tools"
+ENTRYPOINT ["dotnet-ef", "database", "update", "--project", "/src/"]
+
