@@ -16,6 +16,15 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5000
 
+  migration-tool:
+    build:
+      context: ./app
+      target: migrations
+    container_name: hello-migration-tool
+    depends_on:
+      db:
+        condition: service_healthy
+
   webserver:
     image: nginx:mainline-alpine3.20-slim
     container_name: hello-nginx
@@ -34,6 +43,8 @@ services:
     environment:
       POSTGRES_PASSWORD: 12345678
       PGUSER: postgres
+    volumes:
+      - ./dump-db:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD", "pg_isready"]
       interval: 10s
