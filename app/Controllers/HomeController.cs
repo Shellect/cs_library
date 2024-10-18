@@ -7,7 +7,6 @@ namespace app.Controllers
     {
         public IActionResult Index()
         {
-            ViewBag.Title = "Main page";
             return View();
         }
     }
