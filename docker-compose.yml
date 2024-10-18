@@ -43,6 +43,8 @@ services:
     environment:
       POSTGRES_PASSWORD: 12345678
       PGUSER: postgres
+    volumes:
+      - ./dump-db:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD", "pg_isready"]
       interval: 10s
