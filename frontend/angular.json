@@ -5,34 +5,34 @@
       "hello": {
         "projectType": "application",
         "schematics": {},
-        "root": "hello",
-        "sourceRoot": "hello/src",
+        "root": "",
+        "sourceRoot": "src",
         "prefix": "app",
         "architect": {
           "build": {
             "builder": "@angular-devkit/build-angular:application",
             "options": {
               "outputPath": "dist",
-              "index": "hello/src/index.html",
-              "browser": "hello/src/main.ts",
+              "index": "src/index.html",
+              "browser": "src/main.ts",
               "polyfills": [
                 "zone.js"
               ],
-              "tsConfig": "hello/tsconfig.app.json",
+              "tsConfig": "tsconfig.app.json",
               "assets": [
                 {
                   "glob": "**/*",
-                  "input": "hello/public"
+                  "input": "public"
                 }
               ],
               "styles": [
-                "hello/src/styles.css"
+                "src/styles.css"
               ],
               "scripts": [],
-              "server": "hello/src/main.server.ts",
+              "server": "src/main.server.ts",
               "prerender": true,
               "ssr": {
-                "entry": "hello/server.ts"
+                "entry": "server.ts"
               }
             },
             "configurations": {
@@ -81,17 +81,18 @@
                 "zone.js",
                 "zone.js/testing"
               ],
-              "tsConfig": "hello/tsconfig.spec.json",
+              "tsConfig": "tsconfig.spec.json",
               "assets": [
                 {
                   "glob": "**/*",
-                  "input": "hello/public"
+                  "input": "public"
                 }
               ],
               "styles": [
-                "hello/src/styles.css"
+                "src/styles.css"
               ],
-              "scripts": []
+              "scripts": [],
+              "karmaConfig": "karma.conf.js"
             }
           }
         }
