@@ -24,4 +24,15 @@
  ```docker compose down``` - останавливает все контейнеры, включая те, для которых установлен ```restart: always```
  Для удаления старых контейнеров используйте ```--remove-orphans```
 
- 
+ ### Angular
+
+ - Инициализируйте пустой проект `npm init -y`
+ - Установить инструмент командной строки angular: `npm i --save-dev @angular/cli`
+ - Создать конфигурацию рабочего пространства (workspace): `angular.json`
+ - Устанавливаем первое приложение `npx ng g application <имя_приложения>`
+ - Инициализируем tsconfig.json `npx tsc --init`
+ - Меняем настройки typescript по [образцу](https://angular.dev/reference/configs/angular-compiler-options#example-1)
+ - Загрузите минимально необходимы набор пакетов:
+    - @angular/core
+    - @angular/platform-browser
+    - @angular/router

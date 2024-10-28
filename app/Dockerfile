@@ -1,10 +1,7 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS base
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 WORKDIR /src
 COPY *.csproj .
 RUN dotnet restore
-
-FROM base AS build
-WORKDIR /src
 COPY . .
 RUN dotnet build -c Release --no-restore
 

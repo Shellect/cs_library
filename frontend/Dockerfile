@@ -1,16 +1,14 @@
-FROM node:18-alpine AS build
+FROM node:22.10.0-alpine3.20 AS build
 WORKDIR /src
-RUN chown node:node ./
-USER node
 COPY package*.json ./
-RUN npm ci && npm cache clean --force
-COPY ./ ./
+RUN npm install
+COPY . .
 RUN npm run build
 
-FROM  nginx:mainline-alpine3.20-slim AS client
+FROM nginx:mainline-alpine3.20-slim AS webserver
 COPY --from=build /src/dist/browser /usr/share/nginx/html
 
-FROM node:18-alpine AS final
+FROM node:22.10.0-alpine3.20 AS final
 WORKDIR /app
 COPY --from=build /src/dist .
-CMD ["node", "server/server.mjs"]
+CMD ["node", "/app/server/server.mjs"]

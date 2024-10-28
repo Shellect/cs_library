@@ -16,8 +16,8 @@
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "importHelpers": true,
+    "allowSyntheticDefaultImports" : true,
     "useDefineForClassFields": false,
-    "allowSyntheticDefaultImports": true,
     "target": "es2022",
     "module": "es2020",
     "lib": [

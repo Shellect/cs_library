@@ -1,8 +1,9 @@
 {
     "version": 1,
     "newProjectRoot": "",
+    "cli": {},
     "projects": {
-      "hello": {
+      "clientApp": {
         "projectType": "application",
         "schematics": {},
         "root": "",
@@ -63,10 +64,10 @@
             "builder": "@angular-devkit/build-angular:dev-server",
             "configurations": {
               "production": {
-                "buildTarget": "hello:build:production"
+                "buildTarget": "clientApp:build:production"
               },
               "development": {
-                "buildTarget": "hello:build:development"
+                "buildTarget": "clientApp:build:development"
               }
             },
             "defaultConfiguration": "development"
@@ -91,14 +92,10 @@
               "styles": [
                 "src/styles.css"
               ],
-              "scripts": [],
-              "karmaConfig": "karma.conf.js"
+              "scripts": []
             }
           }
         }
       }
-    },
-    "cli": {
-      "analytics": false
     }
 }
