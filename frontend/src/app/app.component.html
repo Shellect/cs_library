@@ -1,33 +1,21 @@
 <!-- <router-outlet /> -->
- <div class="container">
+<div class="container">
   <div class="row">
     <div class="col-6 offset-3 mt-3">
-        <table class="table">
+      <table class="table">
+        <tbody>
+          @for (user of users; track user.id){
           <tr>
-            <td>1</td>
-            <td>Маргарита</td>
+            <td>{{user.Id}}</td>
+            <td>{{user.Login}}</td>
             <td>
               <button class="btn btn-danger">Удалить</button>
               <button class="btn btn-primary">Изменить</button>
             </td>
           </tr>
-          <tr>
-            <td>2</td>
-            <td>Мохито</td>
-            <td>
-              <button class="btn btn-danger">Удалить</button>
-              <button class="btn btn-primary">Изменить</button>
-            </td>
-          </tr>
-          <tr>
-            <td>3</td>
-            <td>Ёрш</td>
-            <td>
-              <button class="btn btn-danger">Удалить</button>
-              <button class="btn btn-primary">Изменить</button>
-            </td>
-          </tr>
-        </table>
+          }
+        </tbody>
+      </table>
     </div>
   </div>
- </div>
+</div>
