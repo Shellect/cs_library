@@ -27,9 +27,7 @@ services:
       PORT: 4000
 
   migration-tool:
-    build:
-      context: ./app
-      target: migrations
+    build: ./migration
     container_name: hello-migration-tool
     volumes:
       - ./app:/app

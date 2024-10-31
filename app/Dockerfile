@@ -1,6 +1,10 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS base
 WORKDIR /app
 
+FROM base AS develop
+ENTRYPOINT ["dotnet", "watch", "run", "--no-launch-profile"]
+
+# Dev environment doesn't run this stage or beyond
 FROM base AS build
 COPY *.csproj .
 RUN dotnet restore
@@ -15,12 +19,3 @@ EXPOSE 5000
 WORKDIR /app
 COPY --from=publish /app/published /app
 ENTRYPOINT ["dotnet", "app.dll"]
-
-FROM base AS develop
-ENTRYPOINT ["dotnet", "watch", "run", "--no-launch-profile"]
-
-FROM base AS migrations
-RUN dotnet tool install --global dotnet-ef
-ENV PATH="$PATH:/root/.dotnet/tools"
-ENTRYPOINT ["dotnet-ef", "database", "update", "--project", "/app/"]
-

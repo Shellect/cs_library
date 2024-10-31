@@ -6,15 +6,22 @@ namespace app.Controllers
 {
     public class UserController : Controller
     {
-        private readonly ApplicationContext db;
+        private readonly ApplicationContext _context;
         public UserController(ApplicationContext context) {
-            db = context;
+            _context = context;
         }
 
         public async Task<JsonResult> Index()
         {
-            List<User> users = await db.Users.ToListAsync();
-            return Json(users);
+            try
+            {
+                List<User> users = await _context.Users.ToListAsync();
+                return Json(users);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
         }
     }
 }
