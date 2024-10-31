@@ -2,6 +2,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient, HttpErrorResponse} from "@angular/common/http";
 import {catchError, throwError} from "rxjs";
 import {User} from "@/shared.types";
+import {environment} from "@/environments/environment";
 
 @Injectable({
     providedIn: 'root'
@@ -25,7 +26,7 @@ export class UsersServiceService {
     }
 
     getUsers() {
-        return this.http.get<User[]>("http://localhost:8080/api/v1/user")
+        return this.http.get<User[]>(environment.apiUrl + "/api/v1/user")
             .pipe(catchError(this.handleError))
     }
 }
