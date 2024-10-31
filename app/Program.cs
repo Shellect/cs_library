@@ -19,7 +19,7 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 // устанавливаем сопоставление маршрутов с контроллерами
 app.MapControllerRoute(
     name: "default",
-    pattern: "api/v1/{controller=Home}/{action=Index}/{id?}"
+    pattern: "{controller=Home}/{action=Index}/{id?}"
 );
  
 

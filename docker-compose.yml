@@ -3,7 +3,7 @@ services:
     build:
       context: ./app
       dockerfile: Dockerfile
-      target: develop
+      target: final
     container_name: hello-dotnet
     depends_on:
       db:
@@ -31,6 +31,8 @@ services:
       context: ./app
       target: migrations
     container_name: hello-migration-tool
+    volumes:
+      - ./app:/app
     depends_on:
       db:
         condition: service_healthy

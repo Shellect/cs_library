@@ -1,0 +1,22 @@
+services:
+  backend:
+    build:
+      target: develop
+    ports:
+      - 5000:5000
+    volumes:
+      - ./app:/app
+
+  frontend:
+    build:
+      target: develop
+      args:
+        NODE_ENV: development
+    volumes:
+      - ./frontend:/app
+    ports:
+      - 4200:4200
+
+  webserver:
+    volumes:
+      - ./nginx.dev.conf:/etc/nginx/conf.d/default.conf
