@@ -1,9 +1,5 @@
-@page
-@{
-    Layout = "/Views/Shared/_Layout.cshtml";
-}
 <div class="row">
-    <form action="/signup" method="post" class="col-6 offset-3">
+    <form action="http://localhost:8080/api/v1/signup" method="post" class="col-6 offset-3">
         <div class="row g-3 align-items-center mt-3">
             <div class="col-2 text-end">
                 <label class="col-form-label" for="login">Login</label>
@@ -45,4 +41,3 @@
         </div>
     </form>
 </div>
-

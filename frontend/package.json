@@ -4,8 +4,8 @@
   "main": "index.js",
   "scripts": {
     "build": "ng build --deploy-url /public/",
-    "serve": "ng serve",
-    "test": "ng test",
+    "serve": "ng serve --host 0.0.0.0",
+    "test": "ng tests",
     "serve:ssr:clientApp": "node dist/server/server.mjs"
   },
   "keywords": [],

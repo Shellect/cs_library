@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { UsersServiceService } from './users-service.service';
-import { User, UsersResponse } from './user';
+import { UsersServiceService } from '@/services/users-service.service';
+import {User} from "@/shared.types";
+
 
 @Component({
   selector: 'app-root',
@@ -15,6 +16,6 @@ export class AppComponent {
   constructor(private usersService: UsersServiceService) {}
 
   ngOnInit () {
-    this.usersService.getUsers().subscribe(usersResponse => this.users = usersResponse.result);
+    this.usersService.getUsers().subscribe(users => this.users = users);
   }
 }
