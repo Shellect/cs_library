@@ -1,17 +1,14 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { UsersServiceService } from '@/services/users-service.service';
+import {UsersServiceService} from "@/services/users-service.service";
 import {User} from "@/shared.types";
 
-
 @Component({
-  selector: 'app-root',
+  selector: 'app-details',
   standalone: true,
-  imports: [RouterOutlet],
-  templateUrl: './app.component.html'
+  imports: [],
+  templateUrl: './details.component.html'
 })
-export class AppComponent {
-  title = 'clientApp';
+export class DetailsComponent {
   users: User[] = [];
   constructor(private usersService: UsersServiceService) {}
 
