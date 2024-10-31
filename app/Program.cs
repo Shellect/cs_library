@@ -2,13 +2,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.HttpOverrides;
 var builder = WebApplication.CreateBuilder(args);
 
-string? connection = builder.Configuration.GetConnectionString("DefaultConnection");
-
 // Добавляем в приложение сервис подключения к базе данных
+string? connection = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContextPool<app.Models.ApplicationContext>(opt => opt.UseNpgsql(connection));
 
-// добавляем сервисы MVC
-builder.Services.AddControllersWithViews(); 
+// добавляем поддержку контроллеров
+builder.Services.AddControllers();
 var app = builder.Build();
 
 app.UseForwardedHeaders(new ForwardedHeadersOptions
