@@ -36,3 +36,10 @@
     - @angular/core
     - @angular/platform-browser
     - @angular/router
+    - и т.д.
+ 
+
+### Тесты
+
+   Для запуска тестов перейдите в папку frontend и выполните команду `npm test`
+   Возможные ошибки - firefox отсутствует или установлен через snap.

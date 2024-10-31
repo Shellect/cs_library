@@ -5,10 +5,8 @@ module.exports = function (config) {
   config.set({
     basePath: '',
     frameworks: ['jasmine', '@angular-devkit/build-angular'],
-    // Uncomment plugin for your browser
     plugins: [
       require('karma-jasmine'),
-      // require('karma-chrome-launcher'),
       require('karma-firefox-launcher'),
       require('karma-jasmine-html-reporter'),
       require('karma-coverage'),
@@ -26,7 +24,7 @@ module.exports = function (config) {
       suppressAll: true // removes the duplicated traces
     },
     coverageReporter: {
-      dir: require('path').join(__dirname, './coverage'),
+      dir: require('path').join(__dirname, './coverage/client-app'),
       subdir: '.',
       reporters: [
         { type: 'html' },
@@ -34,8 +32,7 @@ module.exports = function (config) {
       ]
     },
     reporters: ['progress', 'kjhtml'],
-    // browsers: ['Chrome'],
-    browsers: ['firefox'],
+    browsers: ['Firefox'],
     restartOnFileChange: true
   });
 };
