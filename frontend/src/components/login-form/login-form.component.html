@@ -1,7 +1,3 @@
-@page
-@{
-    Layout = "/Views/Shared/_Layout.cshtml";
-}
 <div class="row">
     <form action="/signup" method="post" class="col-6 offset-3">
         <div class="row g-3 align-items-center mt-3">
@@ -40,9 +36,22 @@
             </div>
         </div>
 
+        <div class="row g-3 align-items-center mt-3">
+            <div class="col-2 text-end">
+                <label for="confirm_password" class="col-form-label">Confirm Password:</label>
+            </div>
+            <div class="col-10">
+                <input type="password" id="confirm_password" name="confirmPassword" class="form-control">
+            </div>
+            <div class="col-12">
+                <span class="form-text text-danger"></span>
+            </div>
+        </div>
+
         <div class="d-grid mt-3">
             <button type="submit" class="btn btn-success">Send</button>
         </div>
     </form>
 </div>
+
 

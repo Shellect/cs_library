@@ -5,10 +5,10 @@ var builder = WebApplication.CreateBuilder(args);
 string? connection = builder.Configuration.GetConnectionString("DefaultConnection");
 
 // Добавляем в приложение сервис подключения к базе данных
-builder.Services.AddDbContextPool<app.Models.ApplicationContext>(opt => opt.UseNpgsql(connection));
+builder.Services.AddDbContext<app.Models.ApplicationContext>(opt => opt.UseNpgsql(connection));
 
 // добавляем сервисы MVC
-builder.Services.AddControllersWithViews(); 
+builder.Services.AddControllers(); 
 var app = builder.Build();
 
 app.UseForwardedHeaders(new ForwardedHeadersOptions
@@ -19,7 +19,7 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 // устанавливаем сопоставление маршрутов с контроллерами
 app.MapControllerRoute(
     name: "default",
-    pattern: "api/v1/{controller=Home}/{action=Index}/{id?}"
+    pattern: "{controller=Home}/{action=Index}/{id?}"
 );
  
 
