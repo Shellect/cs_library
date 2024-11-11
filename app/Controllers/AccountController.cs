@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using app.Models;
 using app.ViewModels;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+
 
 namespace app.Controllers
 {
@@ -23,21 +27,44 @@ namespace app.Controllers
             }
 
             // Выбираем пользователя из базы данных
-            User? user = await context.Users.FirstOrDefaultAsync(u => u.Email ==  model.Email || u.Login == model.Login);
+            User? user = await context.Users.FirstOrDefaultAsync(u => u.Email == model.Email || u.Login == model.Login);
             // Если найден - сообщаем в тексте ошибки
-            if (user != null) 
+            if (user != null)
             {
-                return Results.Json(new RegistrationResponseViewModel { Success = false, Errors = [
+                return Results.Json(new RegistrationResponseViewModel
+                {
+                    Success = false,
+                    Errors = [
                     "Пользователь с такими учетными данными уже существует"
-                ] });
+                ]
+                });
             }
             // Создаем нового пользователя в БД
-            // TODO: подумать про automapper
             context.Users.Add(new User { Login = model.Login, Email = model.Email, Password = model.Password });
-                    await context.SaveChangesAsync();
-            // TODO: аутентификация пользователя
+            await context.SaveChangesAsync();
+            // Аутентификация пользователя
+            var encodedJwt = Authenticate(model.Email);
+            return  Results.Json(new {token = encodedJwt});
             // Возвращаем результат запроса
-            return Results.Json(new RegistrationResponseViewModel { Success = true });
+            // return Results.Json(new RegistrationResponseViewModel { Success = true });
+        }
+
+        private string Authenticate(string userName)
+        {
+            // создаем один claim
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.Name, userName)
+            };
+            // создаем JWT-токен
+            var jwt = new JwtSecurityToken(
+                    issuer: AuthOptions.ISSUER,
+                    audience: AuthOptions.AUDIENCE,
+                    claims: claims,
+                    expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(2)),
+                    signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
+
+            return new JwtSecurityTokenHandler().WriteToken(jwt);
         }
     }
 }
