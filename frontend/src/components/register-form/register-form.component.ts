@@ -2,10 +2,10 @@ import {Component} from '@angular/core';
 import {environment} from "@/environments/environment";
 
 @Component({
-    selector: 'app-login-form',
+    selector: 'app-register-form',
     standalone: true,
-    templateUrl: './login-form.component.html'
+    templateUrl: './register-form.component.html'
 })
-export class LoginFormComponent {
+export class RegisterFormComponent {
     apiUrl: string = environment.apiUrl;
 }
