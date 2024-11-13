@@ -9,7 +9,7 @@
  Для создания миграции в Visual Studio в окне Package Manager Console вводится следующая команда:  
  ```Add-Migration название_миграции```
  или
- ```dotnet ef migrations add название_миграции```
+ ```dotnet ef migrations add название_миграции --output-dir Your/Directory```
 
 ### Дамп базы данных
 
