@@ -29,4 +29,9 @@ export class UsersServiceService {
         return this.http.get<User[]>(environment.apiUrl + "/api/v1/user")
             .pipe(catchError(this.handleError))
     }
+
+    getAntiForgeryToken() {
+        return this.http.get<string>(environment.apiUrl + "/api/v1/account/antiforgerytoken")
+            .pipe(catchError(this.handleError));
+    }
 }

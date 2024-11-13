@@ -2,7 +2,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS base
 WORKDIR /app
 
 FROM base AS develop
-ENTRYPOINT ["dotnet", "watch", "run", "--no-launch-profile"]
+ENTRYPOINT ["dotnet", "watch", "run", "--no-launch-profile", "--non-interactive", "--no-hot-reload"]
 
 # Dev environment doesn't run this stage or beyond
 FROM base AS build
