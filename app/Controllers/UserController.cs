@@ -7,6 +7,7 @@ namespace app.Controllers
 {
     public class UserController(ApplicationContext db) : Controller
     {
+        [Authorize]
         public async Task<IResult> Index()
         {
             List<User> users = await db.Users.ToListAsync();
