@@ -2,13 +2,18 @@ using Microsoft.IdentityModel.Tokens;
 using app.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.HttpOverrides;
+using app.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 string? connection = builder.Configuration.GetConnectionString("DefaultConnection");
 
 // Добавляем в приложение сервис подключения к базе данных
-builder.Services.AddDbContext<app.Models.ApplicationContext>(opt => opt.UseNpgsql(connection));
+builder.Services.AddDbContext<ApplicationContext>(opt => opt.UseNpgsql(connection));
+// Добавляем сервис обработки пользователей
+builder.Services.AddUserService(); 
+// Добавляем сервис работы с токенами
+builder.Services.AddTokenService();
 // Добавляем в приложениие сервис аутентификации через jwt
 builder.Services.AddAuthentication("Bearer").AddJwtBearer(options =>
 {

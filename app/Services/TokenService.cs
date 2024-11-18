@@ -1,7 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
 using app.Models;
 using Microsoft.IdentityModel.Tokens;
 
@@ -9,7 +8,7 @@ namespace app.Services
 {
     public interface ITokenService
     {
-        public string GetAccessToken(IEnumerable<Claim> claims, out DateTime expires);
+        public string GetAccessToken(IEnumerable<Claim> claims);
         public string GetRefreshToken();
         public ClaimsPrincipal GetPrincipalFromExpiredToken(string token);
 
@@ -17,9 +16,9 @@ namespace app.Services
 
     public class TokenService : ITokenService
     {
-        public string GetAccessToken(IEnumerable<Claim> claims, out DateTime expires)
+        public string GetAccessToken(IEnumerable<Claim> claims)
         {
-            expires = DateTime.UtcNow.Add(TimeSpan.FromMinutes(2));
+            DateTime expires = DateTime.UtcNow.Add(TimeSpan.FromMinutes(2));
             // создаем JWT-токен
             var jwt = new JwtSecurityToken(
                     issuer: AuthOptions.ISSUER,
@@ -55,6 +54,14 @@ namespace app.Services
             || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
                 throw new SecurityTokenException("Invalid token");
             return principal;
+        }
+    }
+
+    public static class ServiceProviderExtensions
+    {
+        public static void AddTokenService(this IServiceCollection services)
+        {
+            services.AddTransient<ITokenService>(t => new TokenService());
         }
     }
 }

@@ -6,10 +6,10 @@ namespace app.ViewModels
     {
         [Required(ErrorMessage = "Email is required")]
         [EmailAddress]
-        public string? Email { get; set; }
+        public string Email { get; set; } = "";
         
         [Required(ErrorMessage = "Password is reqired")]
         [MinLength(5, ErrorMessage ="Password length must be more than 5 symbols")]
-        public string? Password { get; set; }
+        public string Password { get; set; } = "";
     }
 }
