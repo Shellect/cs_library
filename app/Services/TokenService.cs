@@ -1,7 +1,9 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
 using app.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
 namespace app.Services
@@ -14,26 +16,28 @@ namespace app.Services
 
     }
 
-    public class TokenService : ITokenService
+    public class TokenService(AuthOptions options) : ITokenService
     {
         public string GetAccessToken(IEnumerable<Claim> claims)
         {
             DateTime expires = DateTime.UtcNow.Add(TimeSpan.FromMinutes(2));
-            // создаем JWT-токен
-            var jwt = new JwtSecurityToken(
-                    issuer: AuthOptions.ISSUER,
-                    audience: AuthOptions.AUDIENCE,
+            SymmetricSecurityKey key = options.GetSymmetricSecurityKey();
+            SigningCredentials credentials = new(key, SecurityAlgorithms.HmacSha256);
+            JwtSecurityToken jwt = new(
+                    issuer: options.issuer,
+                    audience: options.audience,
                     claims: claims,
                     expires: expires,
-                    signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
-
-            return new JwtSecurityTokenHandler().WriteToken(jwt);
+                    signingCredentials: credentials
+            );
+            JwtSecurityTokenHandler handler = new();
+            return handler.WriteToken(jwt);
         }
 
         public string GetRefreshToken()
         {
-            var randomNumber = new byte[32];
-            using var rng = RandomNumberGenerator.Create();
+            byte[] randomNumber = new byte[32];
+            using RandomNumberGenerator rng = RandomNumberGenerator.Create();
             rng.GetBytes(randomNumber);
             return Convert.ToHexString(randomNumber);
         }
@@ -45,9 +49,9 @@ namespace app.Services
                 ValidateIssuer = true,
                 ValidateAudience = true,
                 ValidateIssuerSigningKey = true,
-                ValidIssuer = AuthOptions.ISSUER,
-                ValidAudience = AuthOptions.AUDIENCE,
-                IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
+                ValidIssuer = options.issuer,
+                ValidAudience = options.audience,
+                IssuerSigningKey = options.GetSymmetricSecurityKey(),
             };
             ClaimsPrincipal principal = new JwtSecurityTokenHandler().ValidateToken(token, validationParameters, out SecurityToken securityToken);
             if (securityToken is not JwtSecurityToken jwtSecurityToken
@@ -59,9 +63,31 @@ namespace app.Services
 
     public static class ServiceProviderExtensions
     {
-        public static void AddTokenService(this IServiceCollection services)
+        public static IServiceCollection AddTokenService(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddTransient<ITokenService>(t => new TokenService());
+            AuthOptions opt = new(configuration);
+
+            // Добавляем в приложениие сервис аутентификации через jwt
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = opt.issuer,
+                    ValidateAudience = true,
+                    ValidAudience = opt.audience,
+                    ValidateLifetime = true,
+                    IssuerSigningKey = opt.GetSymmetricSecurityKey(),
+                    ValidateIssuerSigningKey = true,
+                };
+            });
+
+            services.AddTransient<ITokenService>(t => new TokenService(opt));
+            return services;
         }
     }
 }

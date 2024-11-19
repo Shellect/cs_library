@@ -36,3 +36,9 @@
     - @angular/core
     - @angular/platform-browser
     - @angular/router
+
+### Установка Nuget пакетов
+
+```bash
+dotnet add app/app.csproj package Swashbuckle.AspNetCore
+```

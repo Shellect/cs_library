@@ -3,12 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using app.Models;
 using app.ViewModels;
 using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
-using Microsoft.IdentityModel.Tokens;
+using app.Services;
 
 namespace app.Controllers
 {
-    public class AccountController(ApplicationContext _context) : Controller
+    public class AccountController(ApplicationContext _context, TokenService tokenService, UserService userService) : Controller
     {
         private readonly ApplicationContext context = _context;
 
@@ -39,8 +38,7 @@ namespace app.Controllers
                 });
             }
             // Создаем нового пользователя в БД
-            context.Users.Add(new User { Login = model.Login, Email = model.Email, Password = model.Password });
-            await context.SaveChangesAsync();
+            userService.Create(model);
             // Аутентификация пользователя
             var encodedJwt = Authenticate(model.Email);
             return  Results.Json(new {token = encodedJwt});
@@ -57,7 +55,7 @@ namespace app.Controllers
                 return Results.Json(new RegistrationResponseViewModel { Errors = Errors, Success = false });
             }
              // Выбираем пользователя из базы данных
-            User? user = await context.Users.FirstOrDefaultAsync(u => u.Email ==  model.Email && u.Password == model.Password);
+            User? user = await userService.GetUser(model);
             if (user == null)
             {
                 return Results.Json(new RegistrationResponseViewModel { Success = false, Errors = [
@@ -66,7 +64,7 @@ namespace app.Controllers
             }
             // Аутентификация пользователя
             var encodedJwt = Authenticate(model.Email);
-            return  Results.Json(new {token = encodedJwt});
+            return Results.Json(new {token = encodedJwt});
         }
 
         public IActionResult Logout()
@@ -81,15 +79,7 @@ namespace app.Controllers
             {
                 new(ClaimTypes.Name, userName)
             };
-            // создаем JWT-токен
-            var jwt = new JwtSecurityToken(
-                    issuer: AuthOptions.ISSUER,
-                    audience: AuthOptions.AUDIENCE,
-                    claims: claims,
-                    expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(2)),
-                    signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
-
-            return new JwtSecurityTokenHandler().WriteToken(jwt);
+           return tokenService.GetAccessToken(claims);
         }
     }
 }
