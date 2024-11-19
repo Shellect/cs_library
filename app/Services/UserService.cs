@@ -6,16 +6,18 @@ namespace app.Services
 {
     public interface IUserService
     {
-        public void Create(RegistrationViewModel model);
+        public Task<User> Create(RegistrationViewModel model);
         public Task<User?> GetUser(LoginViewModel model);
         public User? GetUser(string refreshToken);
     }
     public class UserService(ApplicationContext context) : IUserService
     {
-        public async void Create(RegistrationViewModel model)
+        public async Task<User> Create(RegistrationViewModel model)
         {
-            context.Users.Add(new User { Login = model.Login, Email = model.Email, Password = model.Password });
+            User user = new() { Login = model.Login, Email = model.Email, Password = model.Password };
+            context.Users.Add(user);
             await context.SaveChangesAsync();
+            return user;
         }
 
         public async Task<User?> GetUser(LoginViewModel model)
@@ -33,7 +35,7 @@ namespace app.Services
     {
         public static void AddUserService(this IServiceCollection services)
         {
-            services.AddScoped<UserService>();
+            services.AddScoped<IUserService, UserService>();
         }
     }
 }

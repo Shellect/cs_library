@@ -86,7 +86,7 @@ namespace app.Services
                 };
             });
 
-            services.AddTransient<ITokenService>(t => new TokenService(opt));
+            services.AddTransient<ITokenService, TokenService>(t => new TokenService(opt));
             return services;
         }
     }

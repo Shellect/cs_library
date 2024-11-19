@@ -7,7 +7,7 @@ using app.Services;
 
 namespace app.Controllers
 {
-    public class AccountController(ApplicationContext _context, TokenService tokenService, UserService userService) : Controller
+    public class AccountController(ApplicationContext _context, ITokenService tokenService, IUserService userService) : Controller
     {
         private readonly ApplicationContext context = _context;
 
@@ -44,7 +44,7 @@ namespace app.Controllers
             return  Results.Json(new {token = encodedJwt});
         }
 
-        public async Task<IResult> Login(LoginViewModel model)
+        public async Task<IResult> Login([FromBody] LoginViewModel model)
         {
             if (!ModelState.IsValid)
             {
