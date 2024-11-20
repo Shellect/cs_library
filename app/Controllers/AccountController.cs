@@ -2,17 +2,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using app.Models;
 using app.ViewModels;
-using System.Security.Claims;
 using app.Services;
+using System.Security.Claims;
 
 namespace app.Controllers
 {
-    public class AccountController(ApplicationContext _context, ITokenService tokenService, IUserService userService) : Controller
+    public class AccountController(ApplicationContext context, ITokenService tokenService, IUserService userService) : Controller
     {
-        private readonly ApplicationContext context = _context;
-
         [HttpPost]
-        public async Task<IResult> Registration([FromBody] RegistrationViewModel model)
+        public async Task<AuthenticateResponse> Registration([FromBody] RegistrationRequest model)
         {
             // Валидация отпраленных пользователем данных
             if (!ModelState.IsValid)
@@ -21,50 +19,60 @@ namespace app.Controllers
                 IEnumerable<string> Errors = ModelState.Values
                             .SelectMany(x => x.Errors)
                             .Select(x => x.ErrorMessage);
-                return Results.Json(new RegistrationResponseViewModel { Errors = Errors, Success = false });
+                return new AuthenticateResponse
+                {
+                    Success = false,
+                    Errors = Errors
+                };
             }
 
             // Выбираем пользователя из базы данных
-            User? user = await context.Users.FirstOrDefaultAsync(u => u.Email == model.Email || u.Login == model.Login);
+            User? existingUser = await context.Users.FirstOrDefaultAsync(u => u.Email == model.Email || u.Login == model.Login);
             // Если найден - сообщаем в тексте ошибки
-            if (user != null)
+            if (existingUser != null)
             {
-                return Results.Json(new RegistrationResponseViewModel
+                return new AuthenticateResponse
                 {
                     Success = false,
                     Errors = [
-                    "Пользователь с такими учетными данными уже существует"
-                ]
-                });
+                        "Пользователь с такими учетными данными уже существует"
+                    ]
+                };
             }
             // Создаем нового пользователя в БД
-            userService.Create(model);
-            // Аутентификация пользователя
-            var encodedJwt = Authenticate(model.Email);
-            return  Results.Json(new {token = encodedJwt});
+            User user = await userService.Create(model);
+            return Authenticate(user);
         }
 
-        public async Task<IResult> Login([FromBody] LoginViewModel model)
+        [HttpPost]
+        public async Task<AuthenticateResponse> Login([FromBody] LoginRequest model)
         {
+            // Валидация отпраленных пользователем данных
             if (!ModelState.IsValid)
             {
                 // Выбираем список ошибок
                 IEnumerable<string> Errors = ModelState.Values
                             .SelectMany(x => x.Errors)
                             .Select(x => x.ErrorMessage);
-                return Results.Json(new RegistrationResponseViewModel { Errors = Errors, Success = false });
+                return new AuthenticateResponse
+                {
+                    Errors = Errors,
+                    Success = false
+                };
             }
-             // Выбираем пользователя из базы данных
+            // Выбираем пользователя из базы данных
             User? user = await userService.GetUser(model);
             if (user == null)
             {
-                return Results.Json(new RegistrationResponseViewModel { Success = false, Errors = [
-                    "Неверный логин или пароль"
-                ] });
+                return new AuthenticateResponse
+                {
+                    Success = false,
+                    Errors = [
+                        "Неверный логин или пароль"
+                    ]
+                };
             }
-            // Аутентификация пользователя
-            var encodedJwt = Authenticate(model.Email);
-            return Results.Json(new {token = encodedJwt});
+            return Authenticate(user);
         }
 
         public IActionResult Logout()
@@ -72,14 +80,98 @@ namespace app.Controllers
             return Ok();
         }
 
-        private string Authenticate(string userName)
+        [HttpPost]
+        public AuthenticateResponse RefreshToken(AuthenticateRequest model)
         {
-            // создаем один claim
-            var claims = new List<Claim>
+            // Find user
+            User? user = userService.GetUser(Request.Cookies["refreshToken"]);
+            if(!ModelState.IsValid || user is null || user.RefreshTokenExpiryTime <= DateTime.Now)
             {
-                new(ClaimTypes.Name, userName)
+                return new AuthenticateResponse
+                {
+                    Success = false,
+                    Errors = [
+                        "Invalid client request"
+                    ]
+                };
+            }
+
+            // Revoke refresh token
+            string RefreshToken = tokenService.GetRefreshToken();
+            user.RefreshToken = RefreshToken;
+            context.SaveChanges();
+
+            CookieOptions cookieOptions = new()
+            {
+                Expires = DateTimeOffset.UtcNow.AddDays(7),
+                HttpOnly = true,
+                IsEssential = true,
+                Secure = true,
+                SameSite = SameSiteMode.None
             };
-           return tokenService.GetAccessToken(claims);
+            Response.Cookies.Append("refreshToken", user.RefreshToken, cookieOptions);
+            
+            // Refresh access token
+            ClaimsPrincipal principal = tokenService.GetPrincipalFromExpiredToken(model.AccessToken);
+            IEnumerable<Claim> claims = principal.Claims;
+
+            // Result
+            return new AuthenticateResponse
+            {
+                Success = true,
+                Login = user.Login,
+                AccessToken = tokenService.GetAccessToken(claims)
+            };
+        }
+
+        [HttpPost]
+        public AuthenticateResponse RevokeToken()
+        {
+            User? user = userService.GetUser(Request.Cookies["refreshToken"]);
+            if (user is null)
+            {
+                return new AuthenticateResponse
+                {
+                    Success = false,
+                    Errors = [
+                        "Invalid client request"
+                    ]
+                };
+            }
+            return Authenticate(user);
+        }
+
+        /// <summary>
+        /// Append cookie with refresh token to the http response
+        /// </summary>
+        private AuthenticateResponse Authenticate(User user)
+        {
+            // Create refresh token
+            string RefreshToken = tokenService.GetRefreshToken();
+            user.RefreshToken = RefreshToken;
+            context.SaveChanges();
+
+            CookieOptions cookieOptions = new()
+            {
+                Expires = DateTimeOffset.UtcNow.AddDays(7),
+                HttpOnly = true,
+                IsEssential = true,
+                Secure = true,
+                SameSite = SameSiteMode.None
+            };
+            Response.Cookies.Append("refreshToken", user.RefreshToken, cookieOptions);
+            // создаем один claim
+            List<Claim> claims =
+            [
+                new(ClaimTypes.Name, user.Login),
+                new(ClaimTypes.Email, user.Email)
+            ];
+            return new AuthenticateResponse
+            {
+                Success = true,
+                Login = user.Login,
+                AccessToken = tokenService.GetAccessToken(claims)
+            };
         }
     }
 }

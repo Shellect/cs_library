@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace app.ViewModels
 {
-    public class RegistrationViewModel
+    public class RegistrationRequest
     {
         [Required(ErrorMessage = "Login is required")]
         public string Login { get; set; } = "";

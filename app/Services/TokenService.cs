@@ -1,7 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
 using app.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -12,7 +11,7 @@ namespace app.Services
     {
         public string GetAccessToken(IEnumerable<Claim> claims);
         public string GetRefreshToken();
-        public ClaimsPrincipal GetPrincipalFromExpiredToken(string token);
+        public ClaimsPrincipal GetPrincipalFromExpiredToken(string AccessToken);
 
     }
 
@@ -42,7 +41,7 @@ namespace app.Services
             return Convert.ToHexString(randomNumber);
         }
 
-        public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
+        public ClaimsPrincipal GetPrincipalFromExpiredToken(string AccessToken)
         {
             TokenValidationParameters validationParameters = new()
             {
@@ -53,7 +52,7 @@ namespace app.Services
                 ValidAudience = options.audience,
                 IssuerSigningKey = options.GetSymmetricSecurityKey(),
             };
-            ClaimsPrincipal principal = new JwtSecurityTokenHandler().ValidateToken(token, validationParameters, out SecurityToken securityToken);
+            ClaimsPrincipal principal = new JwtSecurityTokenHandler().ValidateToken(AccessToken, validationParameters, out SecurityToken securityToken);
             if (securityToken is not JwtSecurityToken jwtSecurityToken
             || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
                 throw new SecurityTokenException("Invalid token");

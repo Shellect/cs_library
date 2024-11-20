@@ -6,13 +6,13 @@ namespace app.Services
 {
     public interface IUserService
     {
-        public Task<User> Create(RegistrationViewModel model);
-        public Task<User?> GetUser(LoginViewModel model);
-        public User? GetUser(string refreshToken);
+        public Task<User> Create(RegistrationRequest model);
+        public Task<User?> GetUser(LoginRequest model);
+        public User? GetUser(string? refreshToken);
     }
     public class UserService(ApplicationContext context) : IUserService
     {
-        public async Task<User> Create(RegistrationViewModel model)
+        public async Task<User> Create(RegistrationRequest model)
         {
             User user = new() { Login = model.Login, Email = model.Email, Password = model.Password };
             context.Users.Add(user);
@@ -20,12 +20,12 @@ namespace app.Services
             return user;
         }
 
-        public async Task<User?> GetUser(LoginViewModel model)
+        public async Task<User?> GetUser(LoginRequest model)
         {
             return await context.Users.FirstOrDefaultAsync(u => u.Email == model.Email && u.Password == model.Password);
         }
 
-        public User? GetUser(string refreshToken)
+        public User? GetUser(string? refreshToken)
         {
             return context.Users.FirstOrDefault(u => u.RefreshToken == refreshToken);
         }
