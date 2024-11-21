@@ -5,7 +5,9 @@ using app.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Добавляем в приложение сервис подключения к базе данных
 string? connection = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<ApplicationContext>(opt => opt.UseNpgsql(connection));
 
 // Добавляем в приложение сервис подключения к базе данных
 builder.Services.AddDbContext<ApplicationContext>(opt => opt.UseNpgsql(connection));
@@ -38,6 +40,7 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
 
+// Подключаем аутентификацию и авторизацию
 app.UseAuthentication();
 app.UseAuthorization();
 

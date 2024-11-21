@@ -1,6 +1,18 @@
 <div class="container">
     <div class="row">
-        <form action="{{apiUrl}}/api/v1/account/login" method="post" class="col-6 offset-3">
+        <form action="{{apiUrl}}/api/v1/account/registration" method="post" class="col-6 offset-3">
+<!-- Login -->
+            <div class="row g-3 align-items-center mt-3">
+                <div class="col-2 text-end">
+                    <label class="col-form-label" for="login">Login</label>
+                </div>
+                <div class="col-10">
+                    <input id="login" name="login" class="form-control">
+                </div>
+                <div class="col-12">
+                    <span class="form-text text-danger"></span>
+                </div>
+            </div>
 <!-- Email -->
             <div class="row g-3 align-items-center mt-3">
                 <div class="col-2 text-end">
@@ -20,6 +32,18 @@
                 </div>
                 <div class="col-10">
                     <input type="password" id="password" name="password" class="form-control">
+                </div>
+                <div class="col-12">
+                    <span class="form-text text-danger"></span>
+                </div>
+            </div>
+<!-- Confirm Password -->
+            <div class="row g-3 align-items-center mt-3">
+                <div class="col-2 text-end">
+                    <label for="confirm_password" class="col-form-label">Confirm Password:</label>
+                </div>
+                <div class="col-10">
+                    <input type="password" id="confirm_password" name="confirm_password" class="form-control">
                 </div>
                 <div class="col-12">
                     <span class="form-text text-danger"></span>
