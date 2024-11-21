@@ -97,25 +97,12 @@ namespace app.Controllers
             }
 
             // Revoke refresh token
-            string RefreshToken = tokenService.GetRefreshToken();
-            user.RefreshToken = RefreshToken;
-            context.SaveChanges();
-
-            CookieOptions cookieOptions = new()
-            {
-                Expires = DateTimeOffset.UtcNow.AddDays(7),
-                HttpOnly = true,
-                IsEssential = true,
-                Secure = true,
-                SameSite = SameSiteMode.None
-            };
-            Response.Cookies.Append("refreshToken", user.RefreshToken, cookieOptions);
+            CreateRefreshToken(user);
             
             // Refresh access token
             ClaimsPrincipal principal = tokenService.GetPrincipalFromExpiredToken(model.AccessToken);
             IEnumerable<Claim> claims = principal.Claims;
 
-            // Result
             return new AuthenticateResponse
             {
                 Success = true,
@@ -146,7 +133,23 @@ namespace app.Controllers
         /// </summary>
         private AuthenticateResponse Authenticate(User user)
         {
-            // Create refresh token
+            CreateRefreshToken(user);
+            // создаем один claim
+            List<Claim> claims =
+            [
+                new(ClaimTypes.Name, user.Login),
+                new(ClaimTypes.Email, user.Email)
+            ];
+            return new AuthenticateResponse
+            {
+                Success = true,
+                Login = user.Login,
+                AccessToken = tokenService.GetAccessToken(claims)
+            };
+        }
+
+        private void CreateRefreshToken(User user)
+        {
             string RefreshToken = tokenService.GetRefreshToken();
             user.RefreshToken = RefreshToken;
             context.SaveChanges();
@@ -160,18 +163,6 @@ namespace app.Controllers
                 SameSite = SameSiteMode.None
             };
             Response.Cookies.Append("refreshToken", user.RefreshToken, cookieOptions);
-            // создаем один claim
-            List<Claim> claims =
-            [
-                new(ClaimTypes.Name, user.Login),
-                new(ClaimTypes.Email, user.Email)
-            ];
-            return new AuthenticateResponse
-            {
-                Success = true,
-                Login = user.Login,
-                AccessToken = tokenService.GetAccessToken(claims)
-            };
         }
     }
 }

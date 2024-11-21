@@ -4,12 +4,12 @@
  ```dotnet tool install --global dotnet-ef```
 
  Устанавливаем пакет  
- ```dotnet add package Microsoft.EntityFrameworkCore.Design```
+ ```dotnet add <имя проекта> package Microsoft.EntityFrameworkCore.Design```
  
  Для создания миграции в Visual Studio в окне Package Manager Console вводится следующая команда:  
  ```Add-Migration название_миграции```
  или
- ```dotnet ef migrations add название_миграции```
+ ```dotnet ef migrations add название_миграции --project <имя проекта>```
 
 ### Дамп базы данных
 
