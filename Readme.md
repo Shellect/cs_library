@@ -9,7 +9,9 @@
  Для создания миграции в Visual Studio в окне Package Manager Console вводится следующая команда:  
  ```Add-Migration название_миграции```
  или
- ```dotnet ef migrations add название_миграции --project <имя проекта>```
+
+ ```dotnet ef migrations add название_миграции --project <имя проекта> --output-dir Your/Directory```
+
 
 ### Дамп базы данных
 
@@ -19,12 +21,12 @@
  ```
  pg_dumb postgres - утилита создания дампов postgres. Аргумент postgres означает базу данных (по умолчанию postgres).
 
- ### Удаление контейнеров
+### Удаление контейнеров
 
  ```docker compose down``` - останавливает все контейнеры, включая те, для которых установлен ```restart: always```
  Для удаления старых контейнеров используйте ```--remove-orphans```
 
- ### Angular
+### Angular
 
  - Инициализируйте пустой проект `npm init -y`
  - Установить инструмент командной строки angular: `npm i --save-dev @angular/cli`
@@ -36,9 +38,15 @@
     - @angular/core
     - @angular/platform-browser
     - @angular/router
+ - и т.д.
 
 ### Установка Nuget пакетов
 
-```bash
-dotnet add app/app.csproj package Swashbuckle.AspNetCore
-```
+ ```bash
+ dotnet add app/app.csproj package Swashbuckle.AspNetCore
+ ```
+
+### Тесты
+
+ Для запуска тестов перейдите в папку frontend и выполните команду `npm test`
+ Возможные ошибки - firefox отсутствует или установлен через snap.

@@ -7,7 +7,7 @@ namespace app.Controllers
     {
         public IActionResult Index()
         {
-            return View();
+            return NotFound();
         }
     }
 }

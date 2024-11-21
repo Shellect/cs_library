@@ -30,7 +30,7 @@ services:
     build: ./migration
     container_name: hello-migration-tool
     volumes:
-      - ./app:/src
+      - ./app:/app
     depends_on:
       db:
         condition: service_healthy
