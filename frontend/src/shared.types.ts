@@ -1,6 +1,13 @@
 export type User = {
-    "id": Number,
-    "login": String,
-    "email": String,
-    "password": String
+    "id": number,
+    "login": string,
+    "email": string,
+    "password": string
+}
+
+export type AccountResponse = {
+    "success": boolean,
+    "errors"?: string[],
+    "login"?: string,
+    "accessToken"?: string
 }

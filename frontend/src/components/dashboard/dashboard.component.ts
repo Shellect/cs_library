@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
-import { UsersServiceService } from '@/services/users-service.service';
+import { UsersService } from '@/services/users.service';
 import { User } from '@/shared.types';
+import { Subscription, throwError } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
@@ -9,9 +10,14 @@ import { User } from '@/shared.types';
 })
 export class DashboardComponent {
   users: User[] = [];
-  constructor(private usersService: UsersServiceService) {}
+  subscription: Subscription | null = null;
+  constructor(private usersService: UsersService) { }
 
-  ngOnInit () {
-    this.usersService.getUsers().subscribe(users => this.users = users);
+  ngOnInit() {
+    this.subscription = this.usersService.getUsers().subscribe(users => this.users = users);
+  }
+
+  ngOnDestroy() {
+    this.subscription?.unsubscribe();
   }
 }
