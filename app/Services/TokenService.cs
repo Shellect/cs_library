@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using app.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
 namespace app.Services
@@ -14,20 +15,22 @@ namespace app.Services
 
     }
 
-    public class TokenService : ITokenService
+    public class TokenService(AuthOptions options) : ITokenService
     {
         public string GetAccessToken(IEnumerable<Claim> claims)
         {
-            DateTime expires = DateTime.UtcNow.Add(TimeSpan.FromMinutes(2));
-            // создаем JWT-токен
-            var jwt = new JwtSecurityToken(
-                    issuer: AuthOptions.ISSUER,
-                    audience: AuthOptions.AUDIENCE,
+            DateTime expires = DateTime.Now.AddHours(4);
+            SymmetricSecurityKey key = options.GetSymmetricSecurityKey();
+            SigningCredentials signature = new(key, SecurityAlgorithms.HmacSha256);
+            JwtSecurityToken jwt = new(
+                    issuer: options.issuer,
+                    audience: options.audience,
                     claims: claims,
                     expires: expires,
-                    signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
-
-            return new JwtSecurityTokenHandler().WriteToken(jwt);
+                    signingCredentials: signature
+            );
+            JwtSecurityTokenHandler handler = new();
+            return handler.WriteToken(jwt);
         }
 
         public string GetRefreshToken()
@@ -38,18 +41,19 @@ namespace app.Services
             return Convert.ToHexString(randomNumber);
         }
 
-        public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
+        public ClaimsPrincipal GetPrincipalFromExpiredToken(string AccessToken)
         {
             TokenValidationParameters validationParameters = new()
             {
                 ValidateIssuer = true,
                 ValidateAudience = true,
                 ValidateIssuerSigningKey = true,
-                ValidIssuer = AuthOptions.ISSUER,
-                ValidAudience = AuthOptions.AUDIENCE,
-                IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
+                ValidIssuer = options.issuer,
+                ValidAudience = options.audience,
+                IssuerSigningKey = options.GetSymmetricSecurityKey(),
             };
-            ClaimsPrincipal principal = new JwtSecurityTokenHandler().ValidateToken(token, validationParameters, out SecurityToken securityToken);
+            ClaimsPrincipal principal = new JwtSecurityTokenHandler()
+                .ValidateToken(AccessToken, validationParameters, out SecurityToken securityToken);
             if (securityToken is not JwtSecurityToken jwtSecurityToken
             || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
                 throw new SecurityTokenException("Invalid token");
@@ -59,9 +63,36 @@ namespace app.Services
 
     public static class ServiceProviderExtensions
     {
-        public static void AddTokenService(this IServiceCollection services)
+        public static void AddTokenService(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddTransient<ITokenService>(t => new TokenService());
+            AuthOptions authOptions = new(configuration);
+            services.AddTransient<ITokenService, TokenService>(t => new TokenService(authOptions));
+            
+            // Добавляем в приложениие сервис аутентификации через jwt
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    // указывает, будет ли валидироваться издатель при валидации токена
+                    ValidateIssuer = true,
+                    // строка, представляющая издателя
+                    ValidIssuer = authOptions.issuer,
+                    // будет ли валидироваться потребитель токена
+                    ValidateAudience = true,
+                    // установка потребителя токена
+                    ValidAudience = authOptions.audience,
+                    // будет ли валидироваться время существования
+                    ValidateLifetime = true,
+                    // установка ключа безопасности
+                    IssuerSigningKey = authOptions.GetSymmetricSecurityKey(),
+                    // валидация ключа безопасности
+                    ValidateIssuerSigningKey = true,
+                };
+            });
         }
     }
 }

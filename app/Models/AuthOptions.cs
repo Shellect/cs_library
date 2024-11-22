@@ -3,12 +3,12 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace app.Models
 {
-    public class AuthOptions
+        public class AuthOptions(IConfiguration configuration)
     {
-        public const string ISSUER = "MyAuthServer"; // издатель токена
-        public const string AUDIENCE = "MyAuthClient"; // потребитель токена
-        const string KEY = "mysupersecret_secretsecretsecretkey!123";   // ключ для шифрации
-        public static SymmetricSecurityKey GetSymmetricSecurityKey() =>
-            new(Encoding.UTF8.GetBytes(KEY));
+        public readonly string issuer = configuration["Jwt:Issuer"] ?? throw new Exception("No issuer was provided"); // издатель токена
+        public readonly string? audience = configuration["Jwt:Audience"]; // потребитель токена
+        private readonly string key = configuration["Jwt:Key"] ?? throw new Exception("No secret key was provided");
+        public SymmetricSecurityKey GetSymmetricSecurityKey() =>
+            new(Encoding.UTF8.GetBytes(key));
     }
 }

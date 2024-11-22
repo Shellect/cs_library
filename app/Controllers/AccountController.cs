@@ -3,17 +3,14 @@ using Microsoft.EntityFrameworkCore;
 using app.Models;
 using app.ViewModels;
 using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
-using Microsoft.IdentityModel.Tokens;
+using app.Services;
 
 namespace app.Controllers
 {
-    public class AccountController(ApplicationContext _context) : Controller
+    public class AccountController(ApplicationContext context, ITokenService tokenService, IUserService userService) : Controller
     {
-        private readonly ApplicationContext context = _context;
-
         [HttpPost]
-        public async Task<IResult> Registration([FromBody] RegistrationViewModel model)
+        public async Task<AuthenticateResponse> Registration([FromBody] RegistrationViewModel model)
         {
             // Валидация отпраленных пользователем данных
             if (!ModelState.IsValid)
@@ -22,7 +19,7 @@ namespace app.Controllers
                 IEnumerable<string> Errors = ModelState.Values
                             .SelectMany(x => x.Errors)
                             .Select(x => x.ErrorMessage);
-                return Results.Json(new RegistrationResponseViewModel { Errors = Errors, Success = false });
+                return new AuthenticateResponse { Errors = Errors, Success = false };
             }
 
             // Выбираем пользователя из базы данных
@@ -30,43 +27,49 @@ namespace app.Controllers
             // Если найден - сообщаем в тексте ошибки
             if (user != null)
             {
-                return Results.Json(new RegistrationResponseViewModel
+                return new AuthenticateResponse
                 {
                     Success = false,
                     Errors = [
                     "Пользователь с такими учетными данными уже существует"
                 ]
-                });
+                };
             }
             // Создаем нового пользователя в БД
-            context.Users.Add(new User { Login = model.Login, Email = model.Email, Password = model.Password });
-            await context.SaveChangesAsync();
+            User newUser = await userService.Create(model);
             // Аутентификация пользователя
-            var encodedJwt = Authenticate(model.Email);
-            return  Results.Json(new {token = encodedJwt});
+            return Authenticate(newUser);
         }
 
-        public async Task<IResult> Login(LoginViewModel model)
+        [HttpPost]
+        public async Task<AuthenticateResponse> Login([FromBody] LoginViewModel model)
         {
+            // Валидация отпраленных пользователем данных
             if (!ModelState.IsValid)
             {
                 // Выбираем список ошибок
                 IEnumerable<string> Errors = ModelState.Values
                             .SelectMany(x => x.Errors)
                             .Select(x => x.ErrorMessage);
-                return Results.Json(new RegistrationResponseViewModel { Errors = Errors, Success = false });
+                return new AuthenticateResponse
+                {
+                    Errors = Errors,
+                    Success = false
+                };
             }
-             // Выбираем пользователя из базы данных
-            User? user = await context.Users.FirstOrDefaultAsync(u => u.Email ==  model.Email && u.Password == model.Password);
+            // Выбираем пользователя из базы данных
+            User? user = await userService.GetUser(model);
             if (user == null)
             {
-                return Results.Json(new RegistrationResponseViewModel { Success = false, Errors = [
-                    "Неверный логин или пароль"
-                ] });
+                return new AuthenticateResponse
+                {
+                    Success = false,
+                    Errors = [
+                        "Неверный логин или пароль"
+                    ]
+                };
             }
-            // Аутентификация пользователя
-            var encodedJwt = Authenticate(model.Email);
-            return  Results.Json(new {token = encodedJwt});
+            return Authenticate(user);
         }
 
         public IActionResult Logout()
@@ -74,22 +77,26 @@ namespace app.Controllers
             return Ok();
         }
 
-        private string Authenticate(string userName)
+        /// <summary>
+        /// Append cookie with refresh token to the http response
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        private AuthenticateResponse Authenticate(User user)
         {
-            // создаем один claim
-            var claims = new List<Claim>
+            // создаем набор claim
+            List<Claim> claims =
+            [
+                new(ClaimTypes.Name, user.Login),
+                new(ClaimTypes.Email, user.Email)
+            ];
+            // Возвращаем access token
+            return new AuthenticateResponse
             {
-                new(ClaimTypes.Name, userName)
+                Success = true,
+                Login = user.Login,
+                AccessToken = tokenService.GetAccessToken(claims)
             };
-            // создаем JWT-токен
-            var jwt = new JwtSecurityToken(
-                    issuer: AuthOptions.ISSUER,
-                    audience: AuthOptions.AUDIENCE,
-                    claims: claims,
-                    expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(2)),
-                    signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
-
-            return new JwtSecurityTokenHandler().WriteToken(jwt);
         }
     }
 }
